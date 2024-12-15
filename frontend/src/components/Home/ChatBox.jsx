@@ -7,6 +7,10 @@ import logo from '../../assets/white-logo.png';
 import { toast, ToastContainer } from 'react-toastify';
 import ScrollableFeed from 'react-scrollable-feed'
 import { sendMessage, setWebSocketReceivedMessage } from '../../redux/appReducer/action';
+import { Picker } from 'emoji-mart'; // Import the emoji picker
+import 'emoji-mart/css/emoji-mart.css';
+
+const GIPHY_API_KEY = '47uJogPyz37cvarG7T3TQKXAI0gquxb2';
 
 export default function ChatBox() {
   const selectedUserForChat = useSelector((state) => state.appReducer.selectedUserForChat);
@@ -21,6 +25,13 @@ export default function ChatBox() {
   const webSocket = useSelector((state) => state.appReducer.webSocket)
 
   const [userInput, setUserInput] = useState("");
+  const [sendMessageProcessing, setSendMessageProcessing] = useState(false);
+  const [getMessageData, setGetMessageData] = useState([]);
+  const [getMessageProcessing, setGetMessageProcessing] = useState(false);
+  const [gifSearchQuery, setGifSearchQuery] = useState('');
+  const [gifResults, setGifResults] = useState([]);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+
   const dispatch = useDispatch();
 
   const handleSendMessage = () => {
@@ -28,6 +39,14 @@ export default function ChatBox() {
       content: userInput.trim(),
       chatId: selectedUserForChat._id
     };
+
+ const handleGifSearch = async () => {
+    if (!gifSearchQuery) return;
+
+    const response = await fetch(`https://api.giphy.com/v1/gifs/search?api_key=${GIPHY_API_KEY}&q=${gifSearchQuery}&limit=10`);
+    const data = await response.json();
+    setGifResults(data.data);
+  };
 
     if (!obj.content) {
       toast.warn('Write something to send', { position: toast.POSITION.BOTTOM_LEFT });
